@@ -22,7 +22,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chat_models import ChatOpenAI
 from langchain_core.documents import Document
-
+from langchain.chains.qa_with_sources.retrieval
 from tqdm import tqdm
 from aug.graph_doc import (
     get_extraction_chain,
@@ -155,6 +155,7 @@ def neo4jvector_get_responses(questions: list[str], documents: list[Document]):
         password=NOE4J_PASSWORD,
     )
     retriever = db.as_retriever()
+    # retriever = None
     chain = RetrievalQAWithSourcesChain.from_chain_type(
         ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k"),
         chain_type="stuff",
@@ -231,15 +232,6 @@ def get_responses_from_documents(
 
 
 @retry(
-    retry=retry_if_exception_type(
-        (
-            openai.error.APIError,
-            openai.error.APIConnectionError,
-            openai.error.RateLimitError,
-            openai.error.ServiceUnavailableError,
-            openai.error.Timeout,
-        )
-    ),
     wait=wait_random_exponential(multiplier=1, max=60),
     stop=stop_after_attempt(10),
 )
@@ -652,17 +644,6 @@ def get_numerical_results_sys_p(
 
 
 @retry(
-    retry=retry_if_exception_type(
-        (
-            openai.error.APIError,
-            openai.error.APIConnectionError,
-            openai.error.RateLimitError,
-            openai.error.ServiceUnavailableError,
-            openai.error.Timeout,
-            ValueError,  # If ":" is not found.
-            AssertionError,
-        )
-    ),
     wait=wait_random_exponential(multiplier=1, max=60),
     stop=stop_after_attempt(10),
 )
